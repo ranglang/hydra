@@ -200,5 +200,10 @@ class BootstrapEndpointSpec extends Matchers
         rejection shouldBe a[MalformedRequestContentRejection]
       }
     }
+
+    "reject a request without token header" in {
+
+    }
+
   }
 }

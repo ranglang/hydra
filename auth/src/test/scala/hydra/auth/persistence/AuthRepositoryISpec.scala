@@ -13,7 +13,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import scala.util.Try
 
-class TokenRepositoryISpec extends FlatSpec
+class AuthRepositoryISpec extends FlatSpec
   with Matchers
   with BeforeAndAfterAll
   with ScalaFutures
@@ -82,5 +82,9 @@ class TokenRepositoryISpec extends FlatSpec
     whenReady(tokenInfoRepo.removeToken(toDeleteToken)) { result =>
       result shouldEqual true
     }
+  }
+
+  it should "insert a resource" in {
+    fail()
   }
 }

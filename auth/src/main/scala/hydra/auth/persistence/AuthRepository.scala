@@ -5,10 +5,10 @@ import hydra.core.persistence.PersistenceDelegate
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TokenInfoRepository(val persistenceDelegate: PersistenceDelegate) extends ITokenInfoRepository
+class AuthRepository(val persistenceDelegate: PersistenceDelegate) extends ITokenInfoRepository
   with RepositoryModels {
 
-  import TokenInfoRepository._
+  import AuthRepository._
 
   import persistenceDelegate.profile.api._
 
@@ -51,9 +51,9 @@ class TokenInfoRepository(val persistenceDelegate: PersistenceDelegate) extends 
   }
 }
 
-object TokenInfoRepository {
-  def apply(persistenceDelegate: PersistenceDelegate): TokenInfoRepository =
-    new TokenInfoRepository(persistenceDelegate)
+object AuthRepository {
+  def apply(persistenceDelegate: PersistenceDelegate): AuthRepository =
+    new AuthRepository(persistenceDelegate)
 
   case class TokenInfo(token: String, resources: Set[String])
 

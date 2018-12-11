@@ -5,7 +5,7 @@ import hydra.auth.persistence.TokenInfoRepository.TokenInfo
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ITokenInfoRepository {
+trait IAuthRepository {
   def getTokenInfo(token:String)
                   (implicit ec: ExecutionContext): Future[TokenInfo]
 
