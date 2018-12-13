@@ -3,6 +3,7 @@ CREATE SCHEMA ingest;
 CREATE TABLE ingest."group" (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
   created_date TIMESTAMP NOT NULL,
   modified_date TIMESTAMP NOT NULL
 );
@@ -25,7 +26,7 @@ CREATE TABLE ingest.token (
  );
 
 INSERT INTO ingest."group" (name, created_date, modified_date) VALUES
-    ('test-group', '2018-11-29 00:00:00', '2018-11-29 00:00:00');
+    ('test-group', 'test-pass', '2018-11-29 00:00:00', '2018-11-29 00:00:00');
 
 INSERT INTO ingest.resource (name, resource_type, group_id) VALUES
     ('resourceA', 'topic', 1),

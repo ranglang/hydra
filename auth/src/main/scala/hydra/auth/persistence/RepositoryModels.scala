@@ -34,18 +34,20 @@ trait RepositoryModels {
 
   lazy val tokenTable = TableQuery[TokenTable]
 
-  type GroupType = (Int, String, DateTime, DateTime)
+  type GroupType = (Int, String, String, DateTime, DateTime)
 
   class GroupTable(tag: Tag) extends Table[GroupType](tag, Some("ingest"), "group") {
     def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
 
     def name = column[String]("name")
 
+    def password = column[String]("password")
+
     def createdDate = column[DateTime]("created_date")
 
     def modifiedDate = column[DateTime]("modified_date")
 
-    def * = (id, name, createdDate, modifiedDate)
+    def * = (id, name, password, createdDate, modifiedDate)
   }
 
   lazy val groupTable = TableQuery[GroupTable]
@@ -74,7 +76,9 @@ object RepositoryModels {
   case class Token(id: Int, createdDate: DateTime, modifiedDate: DateTime, token: String,
                    groupId: Int)
 
-  case class Group(id: Int, name: String, createdDate: DateTime, modifiedDate: DateTime)
+  case class Group(id: Int, name: String, password: String, createdDate: DateTime, modifiedDate: DateTime)
 
   case class Resource(id: Int, name: String, resourceType: String, groupId: Int)
+
+  case class ResourceInfo(name: String, resourceType: String)
 }
