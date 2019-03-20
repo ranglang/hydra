@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import hydra.core.http.IHttpRequestor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -45,6 +45,14 @@ class TokenClientSpec extends TestKit(ActorSystem("token-client-spec"))
 
   it should "validate a token" in {
     fail()
+  }
+
+  it should "return a cached token if available" in {
+
+  }
+
+  it should "call the token service if a token isn't present in the cache" in {
+
   }
 
 }
