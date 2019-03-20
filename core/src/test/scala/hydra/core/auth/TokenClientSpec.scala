@@ -1,21 +1,32 @@
-package hydra.core
+package hydra.core.auth
 
-import hydra.core.ingest.HydraRequest
-import hydra.core.protocol._
-import org.joda.time.DateTime
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes}
+import com.typesafe.config.ConfigFactory
+import hydra.core.http.IHttpRequestor
 import org.scalatest.{FlatSpecLike, Matchers}
 
-import scala.concurrent.duration._
+import scala.concurrent.Future
 
 class TokenClientSpec extends Matchers with FlatSpecLike {
 
+  val tokenConfig = ConfigFactory.load()
+  val requestor = TestRequestor()
+
   "The token client" should "generate a token" in {
-    val ex = new HydraException("error")
-    ex.getCause shouldBe null
+    val client = new TokenClient(tokenConfig, requestor)
+    val tokenStr = client.generateToken()
+    tokenStr shouldBe a[String]
   }
 
   it should "validate a token" in {
-
+    fail()
   }
 
+}
+
+
+case class TestRequestor() extends IHttpRequestor {
+  override def makeRequest(request: HttpRequest): Future[HttpResponse] = {
+    Future.successful(HttpResponse(StatusCodes.OK, entity="It's sicknasty bruh"))
+  }
 }
