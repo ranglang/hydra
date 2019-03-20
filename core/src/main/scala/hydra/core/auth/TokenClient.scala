@@ -2,14 +2,24 @@ package hydra.core.auth
 
 import java.util.UUID
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model._
-import com.typesafe.config.Config
-import hydra.core.auth.TokenClient.TokenServiceResponse
-import hydra.core.http.IHttpRequestor
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import scala.concurrent.Future
+import akka.stream.ActorMaterializer
+import com.typesafe.config.Config
+import hydra.core.http.IHttpRequestor
+import hydra.core.marshallers.HydraJsonSupport
+import spray.json.DefaultJsonProtocol
 
-class TokenClient(tokenConfig: Config, httpRequestor: IHttpRequestor) {
+import scala.concurrent.{ExecutionContext, Future}
+
+
+class TokenClient(tokenConfig: Config, httpRequestor: IHttpRequestor)(implicit ec: ExecutionContext, mat: ActorMaterializer) {
+  import TokenClient._
+
+  implicit val tokenServiceResponseFmt = jsonFormat2(TokenServiceResponse)
+
+  case class TokenServiceResponse(token: UUID, group: String)
 
   val tokenServiceUrl = tokenConfig.getString("token-service-url")
 
@@ -24,6 +34,6 @@ class TokenClient(tokenConfig: Config, httpRequestor: IHttpRequestor) {
   def validate(): Unit = {}
 }
 
-object TokenClient {
-  case class TokenServiceResponse(token: UUID, group: String)
+object TokenClient extends HydraJsonSupport {
+
 }
