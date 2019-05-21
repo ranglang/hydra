@@ -9,7 +9,7 @@ import akka.kafka._
 import akka.kafka.scaladsl.Consumer.DrainingControl
 import akka.kafka.scaladsl.{Committer, Consumer, Producer}
 import akka.stream.scaladsl.{Keep, RunnableGraph}
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.{ActorMaterializer, ActorMaterializerSettings, Materializer, Supervision}
 import com.typesafe.config.Config
 import hydra.common.config.ConfigSupport
 import hydra.kafka.util.KafkaUtils
@@ -28,7 +28,7 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
 
   private implicit val ec = context.dispatcher
 
-  private implicit val materializer: Materializer = ActorMaterializer()
+
 
   private val stream = CompactedTopicStreamActor.createStream(kafkaConfig, bootstrapServers, fromTopic, toTopic)
   private val kafkaUtils = KafkaUtils()
@@ -38,6 +38,14 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
     kafkaConfig.getInt("partitions"),
     kafkaConfig.getInt("replication-factor").toShort,
     compactedDetailsConfig)
+
+
+  val decider: Supervision.Decider = {
+    case e: Throwable => throw e; Supervision.Stop
+    case _ => throw new Exception("unhandled exception in compacted topic stream actor"); Supervision.Stop
+  }
+
+  private implicit val materializer: Materializer = ActorMaterializer(ActorMaterializerSettings(context.system).withSupervisionStrategy(decider))
 
   override def receive: Receive = {
     Actor.emptyBehavior
