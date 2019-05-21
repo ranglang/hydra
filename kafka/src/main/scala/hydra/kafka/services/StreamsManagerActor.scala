@@ -17,6 +17,7 @@ import hydra.common.config.ConfigSupport
 import hydra.common.util.MonadUtils.booleanToOption
 import hydra.core.marshallers.{History, HydraJsonSupport}
 import hydra.kafka.model.TopicMetadata
+import hydra.kafka.util.KafkaUtils
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import org.apache.avro.generic.GenericRecord
@@ -48,6 +49,9 @@ class StreamsManagerActor(bootstrapKafkaConfig: Config,
     schemaRegistryClient, metadataTopicName, self)
 
 
+  private val kafkaUtils = KafkaUtils()
+
+
   override def receive: Receive = Actor.emptyBehavior
 
   override def preStart(): Unit = {
@@ -60,13 +64,18 @@ class StreamsManagerActor(bootstrapKafkaConfig: Config,
       sender ! GetMetadataResponse(metadataMap)
 
     case t: TopicMetadata =>
-       buildCompactedProps(t).foreach { compactedProps =>
-         val childName = compactedPrefix + t.subject
-         if(context.child(childName).isEmpty) {
-           context.actorOf(compactedProps, name = childName)
-         }
-       }
-      context.become(streaming(stream, metadataMap + (t.subject -> t)))
+      //kafkaUtils.topicExists(t.subject).map { _ =>
+        log.info("creating compacted topic streaming child actor")
+        buildCompactedProps(t).foreach { compactedProps =>
+          val childName = compactedPrefix + t.subject
+          if (context.child(childName).isEmpty) {
+            context.actorOf(compactedProps, name = childName)
+          }
+        }
+        context.become(streaming(stream, metadataMap + (t.subject -> t)))
+      //}.recover{
+        //case e => log.error(e, "error while attempting to create compacted topic stream!" + e.getMessage)
+      //}
 
     case StopStream =>
       pipe(stream._1.shutdown().map(_ => StreamStopped)) to sender
