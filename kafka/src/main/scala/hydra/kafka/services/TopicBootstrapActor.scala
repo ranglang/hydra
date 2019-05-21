@@ -220,7 +220,7 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
       }.map { _ => BootstrapSuccess }
       .recover {
         case illegalArg: IllegalArgumentException => {
-          log.info(s"Topic $topicName already exists, proceeding anyway...")
+          log.warning(s"Topic $topicName already exists, proceeding anyway...")
           BootstrapSuccess
         }
         case e: Exception => throw e

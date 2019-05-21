@@ -5,12 +5,11 @@ import java.util.concurrent.TimeUnit
 
 import akka.Done
 import akka.actor.{Actor, ActorLogging, Props}
-import akka.event.Logging
 import akka.kafka._
 import akka.kafka.scaladsl.Consumer.DrainingControl
 import akka.kafka.scaladsl.{Committer, Consumer, Producer}
 import akka.stream.scaladsl.{Keep, RunnableGraph}
-import akka.stream.{ActorMaterializer, Attributes, Materializer}
+import akka.stream.{ActorMaterializer, Materializer}
 import com.typesafe.config.Config
 import hydra.common.config.ConfigSupport
 import hydra.kafka.util.KafkaUtils
@@ -48,14 +47,14 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
     log.debug(s"Starting compacted topic actor for $toTopic")
     kafkaUtils.topicExists(self.path.name).collect {
       case true => {
-        context.become(streaming(stream.run()))
+        startStream()
       }
       case false => {
         val timeoutMillis = kafkaConfig.getInt("timeout")
         kafkaUtils.createTopic(self.path.name, compactedDetails, timeoutMillis).map {
           result => result.all.get(timeoutMillis, TimeUnit.MILLISECONDS)
         }.map { _ =>
-          context.become(streaming(stream.run()))
+          startStream()
         }
       }
     }
@@ -66,6 +65,10 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
     Actor.emptyBehavior
   }
 
+  private[kafka] def startStream(): Unit = {
+    context.become(streaming(stream.run()))
+  }
+
 
 }
 
@@ -74,6 +77,7 @@ object CompactedTopicStreamActor {
   private type Stream = RunnableGraph[DrainingControl[Done]]
 
   case class CreateCompactedStream(topicName: String)
+  case object KillIfStreamFailed
 
   def props(fromTopic: String, toTopic: String, bootstrapServers: String, config: Config) = {
     Props(classOf[CompactedTopicStreamActor], fromTopic, toTopic, bootstrapServers, config)
@@ -102,18 +106,10 @@ object CompactedTopicStreamActor {
         )
       })
       .log(s"compacted stream logging: $fromTopic")
-        .withAttributes(
-          Attributes.logLevels(
-            onElement = Logging.InfoLevel,
-            onFinish = Logging.InfoLevel,
-            onFailure = Logging.DebugLevel
-          )
-        )
       .via(Producer.flexiFlow(producerSettings))
       .map(_.passThrough)
       .toMat(Committer.sink(committerSettings))(Keep.both)
       .mapMaterializedValue(DrainingControl.apply)
-
     stream
   }
 
