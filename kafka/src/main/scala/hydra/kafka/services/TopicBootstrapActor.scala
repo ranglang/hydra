@@ -23,6 +23,7 @@ import hydra.kafka.util.KafkaUtils
 import org.apache.kafka.common.requests.CreateTopicsRequest.TopicDetails
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.io.Source
@@ -199,9 +200,7 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
   }
 
   private[kafka] def shouldCreateCompactedTopic(topicMetadataRequest: TopicMetadataRequest): Boolean = {
-    val compactedPrefix = bootstrapKafkaConfig.get[String]("compacted-topic-prefix").valueOrElse("_compacted.")
-    val compactedExists = kafkaUtils.topicExists(compactedPrefix + topicMetadataRequest.subject).get
-    topicMetadataRequest.streamType == History && topicMetadataRequest.schema.fields.contains("hydra.key") && !compactedExists
+    topicMetadataRequest.streamType == History && topicMetadataRequest.schema.fields.contains("hydra.key")
   }
 
   private[kafka] def createKafkaTopics(topicMetadataRequest: TopicMetadataRequest): Future[BootstrapResult] = {
@@ -216,18 +215,21 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
       topicMap += (compactedPrefix+topicName -> compactedDetails)
     }
 
-    kafkaUtils.createTopics(topicMap, timeout = timeoutMillis)
-      .map { r =>
-        r.all.get(timeoutMillis, TimeUnit.MILLISECONDS)
-      }.map { _ => BootstrapSuccess }
-      .recover {
-        case illegalArg: IllegalArgumentException => {
-          log.warning(s"Topic $topicName already exists, proceeding anyway...")
-          BootstrapSuccess
+    topicMap.foreach { nameDetailsTup =>
+      kafkaUtils.createTopic(nameDetailsTup._1, nameDetailsTup._2, timeoutMillis)
+        .map { r =>
+          r.all.get(timeoutMillis, TimeUnit.MILLISECONDS)
+        }.map { _ => BootstrapSuccess }
+        .recover {
+          case illegalArg: IllegalArgumentException => {
+            log.warning(s"Topic ${nameDetailsTup._1} already exists, proceeding anyway...")
+            BootstrapSuccess
+          }
+          case e: Exception => throw e
         }
-        case e: Exception => throw e
-      }
 
+    }
+    Future(BootstrapSuccess)
     }
 
 }
