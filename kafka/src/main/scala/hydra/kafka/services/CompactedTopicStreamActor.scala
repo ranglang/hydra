@@ -52,7 +52,7 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
   }
 
   override def preStart(): Unit = {
-    log.debug(s"Starting compacted topic actor for $toTopic")
+    log.info(s"Starting compacted topic actor for $toTopic")
     kafkaUtils.topicExists(self.path.name).collect {
       case true => {
         startStream()

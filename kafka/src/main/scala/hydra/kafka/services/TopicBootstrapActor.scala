@@ -199,7 +199,9 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
   }
 
   private[kafka] def shouldCreateCompactedTopic(topicMetadataRequest: TopicMetadataRequest): Boolean = {
-    topicMetadataRequest.streamType == History && topicMetadataRequest.schema.fields.contains("hydra.key")
+    val compactedPrefix = bootstrapKafkaConfig.get[String]("compacted-topic-prefix").valueOrElse("_compacted.")
+    val compactedExists = kafkaUtils.topicExists(compactedPrefix + topicMetadataRequest.subject).get
+    topicMetadataRequest.streamType == History && topicMetadataRequest.schema.fields.contains("hydra.key") && !compactedExists
   }
 
   private[kafka] def createKafkaTopics(topicMetadataRequest: TopicMetadataRequest): Future[BootstrapResult] = {
