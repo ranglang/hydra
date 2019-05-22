@@ -27,7 +27,7 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
 
 
   private implicit val ec = context.dispatcher
-
+  private implicit val logger = log
 
 
   private val stream = CompactedTopicStreamActor.createStream(kafkaConfig, bootstrapServers, fromTopic, toTopic)

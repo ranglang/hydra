@@ -227,7 +227,6 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
           }
           case e: Exception => throw e
         }
-
     }
     Future(BootstrapSuccess)
     }
