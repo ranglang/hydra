@@ -27,6 +27,7 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
 
 
   private implicit val ec = context.dispatcher
+  private implicit val materializer: Materializer = ActorMaterializer()
   private implicit val logger = log
 
 
@@ -40,12 +41,6 @@ class CompactedTopicStreamActor(fromTopic: String, toTopic: String, bootstrapSer
     compactedDetailsConfig)
 
 
-  val decider: Supervision.Decider = {
-    case e: Throwable => throw e; Supervision.Stop
-    case _ => throw new Exception("unhandled exception in compacted topic stream actor"); Supervision.Stop
-  }
-
-  private implicit val materializer: Materializer = ActorMaterializer(ActorMaterializerSettings(context.system).withSupervisionStrategy(decider))
 
   override def receive: Receive = {
     Actor.emptyBehavior
@@ -85,7 +80,6 @@ object CompactedTopicStreamActor {
   private type Stream = RunnableGraph[DrainingControl[Done]]
 
   case class CreateCompactedStream(topicName: String)
-  case object KillIfStreamFailed
 
   def props(fromTopic: String, toTopic: String, bootstrapServers: String, config: Config) = {
     Props(classOf[CompactedTopicStreamActor], fromTopic, toTopic, bootstrapServers, config)
