@@ -39,7 +39,7 @@ class KafkaTopicsActor(cfg: Config, checkInterval: FiniteDuration) extends Actor
 
   timers.startPeriodicTimer(TopicsTimer, RefreshTopicList, checkInterval)
 
-  private def getTopics: Seq[String] = {
+  private def fetchTopics(): Seq[String] = {
     Try(AdminClient.create(ConfigSupport.toMap(cfg).asJava)).map { c =>
       val t = c.listTopics().names.get(checkInterval.toSeconds.longValue / 2, TimeUnit.SECONDS).asScala.toSeq
       Try(c.close(checkInterval.toSeconds.longValue / 2, TimeUnit.SECONDS))
@@ -49,7 +49,7 @@ class KafkaTopicsActor(cfg: Config, checkInterval: FiniteDuration) extends Actor
 
   override def receive: Receive = {
     case RefreshTopicList =>
-      context.become(withTopics(getTopics))
+      context.become(withTopics(fetchTopics()))
       unstashAll()
     case GetTopicRequest(_) => stash()
   }
@@ -60,7 +60,7 @@ class KafkaTopicsActor(cfg: Config, checkInterval: FiniteDuration) extends Actor
       sender ! GetTopicResponse(topic, DateTime.now, topicR.isDefined)
 
     case RefreshTopicList =>
-      context.become(withTopics(getTopics))
+      context.become(withTopics(fetchTopics()))
   }
 
   override def postStop(): Unit = {
