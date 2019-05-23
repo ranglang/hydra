@@ -200,7 +200,10 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
   }
 
   private[kafka] def shouldCreateCompactedTopic(topicMetadataRequest: TopicMetadataRequest): Boolean = {
-    topicMetadataRequest.streamType == History && topicMetadataRequest.schema.fields.contains("hydra.key")
+    if(topicMetadataRequest.streamType == History && topicMetadataRequest.schema.fields.contains("hydra.key")) {
+      val compactedPrefix = bootstrapKafkaConfig.get[String]("compacted-topic-prefix").valueOrElse("_compacted.")
+      kafkaUtils.topicExists(compactedPrefix+topicMetadataRequest.subject).get
+    } else { false }
   }
 
   private[kafka] def createKafkaTopics(topicMetadataRequest: TopicMetadataRequest): Future[BootstrapResult] = {
@@ -209,13 +212,13 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
 
     var topicMap: Map[String, TopicDetails] = Map(topicName -> topicDetails)
 
-    if(shouldCreateCompactedTopic(topicMetadataRequest)) {
+    if (shouldCreateCompactedTopic(topicMetadataRequest)) {
       val compactedPrefix = bootstrapKafkaConfig.get[String]("compacted-topic-prefix").valueOrElse("_compacted.")
       log.info(s"adding $compactedPrefix to creation...")
-      topicMap += (compactedPrefix+topicName -> compactedDetails)
+      topicMap += (compactedPrefix + topicName -> compactedDetails)
     }
 
-    topicMap.foreach { nameDetailsTup =>
+    val result = topicMap.map { nameDetailsTup =>
       kafkaUtils.createTopic(nameDetailsTup._1, nameDetailsTup._2, timeoutMillis)
         .map { r =>
           r.all.get(timeoutMillis, TimeUnit.MILLISECONDS)
@@ -225,11 +228,18 @@ class TopicBootstrapActor(schemaRegistryActor: ActorRef,
             log.warning(s"Topic ${nameDetailsTup._1} already exists, proceeding anyway...")
             BootstrapSuccess
           }
-          case e: Exception => throw e
+          case e: Exception => BootstrapFailure(Seq(e.getMessage))
         }
     }
-    Future(BootstrapSuccess)
+    val trav: Future[immutable.Iterable[BootstrapResult with Product with Serializable]] = Future.sequence(result)
+    trav.map{ bootstrapResult =>
+      println("fuck")
+      BootstrapFailure
+      //if(bootstrapResult.exists(_.isInstanceOf[BootstrapFailure])) BootstrapFailure else BootstrapSuccess
     }
+  }
+
+  private def doCreateTopic(topicName: String): Future[Bootstrap]
 
 }
 
