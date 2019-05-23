@@ -40,7 +40,7 @@ class KafkaTopicsActor(cfg: Config, checkInterval: FiniteDuration) extends Actor
 
   timers.startPeriodicTimer(TopicsTimer, RefreshTopicList, checkInterval)
 
-  private def topics: Seq[String] = {
+  private def getTopics: Seq[String] = {
     Try(AdminClient.create(ConfigSupport.toMap(cfg).asJava)).map { c =>
       val t = c.listTopics().names.get(checkInterval.toSeconds.longValue / 2, TimeUnit.SECONDS).asScala.toSeq
       Try(c.close(checkInterval.toSeconds.longValue / 2, TimeUnit.SECONDS))
@@ -50,18 +50,18 @@ class KafkaTopicsActor(cfg: Config, checkInterval: FiniteDuration) extends Actor
 
   override def receive: Receive = {
     case RefreshTopicList =>
-      context.become(withTopics(topics))
+      context.become(withTopics(getTopics))
       unstashAll()
     case GetTopicRequest(_) => stash()
   }
 
   private def withTopics(topicList: Seq[String]): Receive = {
     case GetTopicRequest(topic) =>
-      val topicR = topics.find(_ == topic)
+      val topicR = topicList.find(_ == topic)
       sender ! GetTopicResponse(topic, DateTime.now, topicR.isDefined)
 
     case RefreshTopicList =>
-      context.become(withTopics(topics))
+      context.become(withTopics(getTopics))
   }
 
   override def postStop(): Unit = {
@@ -79,7 +79,7 @@ object KafkaTopicActor {
 
   case class GetTopicResponse(topic: String, lookupDate: DateTime, exists: Boolean)
 
-  def props(cfg: Config, interval: FiniteDuration = 5 seconds) = Props(classOf[KafkaTopicsActor], cfg, interval)
+  def props(cfg: Config, interval: FiniteDuration = 10 seconds) = Props(classOf[KafkaTopicsActor], cfg, interval)
 
 }
 
