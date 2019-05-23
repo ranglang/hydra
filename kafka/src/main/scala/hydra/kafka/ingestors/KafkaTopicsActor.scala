@@ -22,7 +22,6 @@ import akka.actor.{Actor, Props, Stash, Timers}
 import com.typesafe.config.Config
 import hydra.common.config.ConfigSupport
 import hydra.common.logging.LoggingAdapter
-import hydra.common.util.TryWith
 import hydra.kafka.ingestors.KafkaTopicActor.{GetTopicRequest, GetTopicResponse, RefreshTopicList, TopicsTimer}
 import org.apache.kafka.clients.admin.AdminClient
 import org.joda.time.DateTime
