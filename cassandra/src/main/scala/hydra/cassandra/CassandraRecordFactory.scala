@@ -79,7 +79,7 @@ class CassandraRecordFactory(schemaResourceLoader: ActorRef) extends RecordFacto
       }
 
       val clusteringOrder = request.metadataValue(CLUSTERING_ORDER_PARAM).getOrElse(CassandraSchemaParser.clusteringOrder(schema))
-      val clusteringColumn = ClusteringColumn(clusteringColumnName, clusteringOrder)
+      val clusteringColumn = ClusteringColumns(clusteringColumnName, clusteringOrder)
       val cassandraWriteOptions = CassandraWriteOptions(keyspace, table, consistencyLevel, isCompactStorage, partitionKeys, clusteringColumn)
       val primaryKeys = CassandraRecordFactory.primaryKeys(request, schema)
 
@@ -150,9 +150,10 @@ case class CassandraWriteOptions(keySpace: String,
                                  consistencyLevel: String,
                                  isCompactStorage: Boolean,
                                  partitionKeys: Seq[String],
-                                 clusteringColumn: ClusteringColumn
+                                 clusteringColumn: ClusteringColumns
                                 ) {}
 
 object CassandraWriteOptions {
   val DEFAULT_CONSISTENCY_LEVEL = "QUORUM"
+  val DEFAULT_IS_COMPACT_STORAGE = false
 }

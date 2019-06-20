@@ -22,4 +22,8 @@ case class CassandraRecordMetadata(destination: String,
                                   ) extends RecordMetadata {}
 
 
-case class ClusteringColumn(columns: Seq[String], order: String)
+case class ClusteringColumns(columns: Seq[String], order: String)
+
+object ClusteringColumns {
+  val DEFAULT_CLUSTERING_ORDER = "ASC"
+}

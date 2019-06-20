@@ -7,12 +7,12 @@ import hydra.avro.registry.JsonToAvroConversionExceptionWithMetadata
 import hydra.avro.resource.SchemaResource
 import hydra.core.akka.SchemaRegistryActor.{FetchSchemaRequest, FetchSchemaResponse}
 import hydra.core.ingest.HydraRequest
+import hydra.core.ingest.RequestParams.HYDRA_SCHEMA_PARAM
 import hydra.core.protocol.MissingMetadataException
 import org.apache.avro.Schema
+import org.apache.avro.generic.GenericRecord
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FunSpecLike, Matchers}
-import hydra.core.ingest.RequestParams.HYDRA_SCHEMA_PARAM
-import org.apache.avro.generic.GenericRecord
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -122,7 +122,7 @@ class CassandraRecordFactorySpec extends TestKit(ActorSystem("cassandra-record-f
           CassandraRecordFactory.PARTITION_KEYS_PARAM -> "id,name,rank",
           CassandraRecordFactory.CONSISTENCY_LEVEL_PARAM -> "ALL"
         )
-      val clusteringColumn = ClusteringColumn(Seq("name"), "DESC")
+      val clusteringColumn = ClusteringColumns(Seq("name"), "DESC")
       val cassandraWriteOptions = CassandraWriteOptions(
         keySpace,
         schemaWithPrimaryKey.getName,

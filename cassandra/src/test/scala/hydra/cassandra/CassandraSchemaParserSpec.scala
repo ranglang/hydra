@@ -11,9 +11,10 @@ class CassandraSchemaParserSpec extends FlatSpec
   val schemaNoProperties: Schema = new Schema.Parser().parse(Source.fromResource("schema-with-no-primary-key.avsc").mkString)
   val schemaWithAllProperties: Schema = new Schema.Parser().parse(Source.fromResource("schema-with-all-schema-properties.avsc").mkString)
 
-  "The CassandraSchemaParser" should "default to false when there isn't a hydra.enable.compact.storage property on the schema" in {
+  "The CassandraSchemaParser" should
+    s"default to ${CassandraWriteOptions.DEFAULT_IS_COMPACT_STORAGE} when there isn't a hydra.enable.compact.storage property on the schema" in {
       val isCompactStorage = CassandraSchemaParser.isCompactStorage(schemaNoProperties)
-      isCompactStorage shouldBe false
+      isCompactStorage shouldBe CassandraWriteOptions.DEFAULT_IS_COMPACT_STORAGE
   }
 
   it should "get the schema value for the hydra.enable.compact.storage property" in {
@@ -31,9 +32,9 @@ class CassandraSchemaParserSpec extends FlatSpec
     clusteringColumns shouldBe Seq("name")
   }
 
-  it should "default to ASC when there isn't a hydra.clustering.order property on the schema" in {
+  it should s"default to ${ClusteringColumns.DEFAULT_CLUSTERING_ORDER} when there isn't a hydra.clustering.order property on the schema" in {
     val clusteringOrder = CassandraSchemaParser.clusteringOrder(schemaNoProperties)
-    clusteringOrder shouldBe "ASC"
+    clusteringOrder shouldBe ClusteringColumns.DEFAULT_CLUSTERING_ORDER
   }
 
   it should "get the schema value for the hydra.clustering.order property" in {

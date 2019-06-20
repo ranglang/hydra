@@ -1,6 +1,5 @@
 package hydra.cassandra
 
-import hydra.core.protocol.MissingMetadataException
 import org.apache.avro.Schema
 
 object CassandraSchemaParser {
@@ -14,14 +13,14 @@ object CassandraSchemaParser {
   def clusteringOrder(schema: Schema): String = {
     Option(schema.getProp("hydra.clustering.order")) match {
       case Some(clusteringOrder) => clusteringOrder
-      case None => "ASC"
+      case None => ClusteringColumns.DEFAULT_CLUSTERING_ORDER
     }
   }
 
   def isCompactStorage(schema: Schema): Boolean = {
     Option(schema.getProp("hydra.enable.compact.storage")) match {
       case Some(isCompactStorage) => isCompactStorage.toBoolean
-      case None => false
+      case None => CassandraWriteOptions.DEFAULT_IS_COMPACT_STORAGE
     }
   }
 
