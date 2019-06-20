@@ -174,6 +174,8 @@ object Dependencies {
   val rabbitDeps = logging ++ Seq(scalaConfigs) ++ joda ++ opRabbit ++ testDeps
 
   val kafkaDeps = coreDeps ++ Seq(akkaKafkaStream, jsonLenses) ++ kafka ++ akkaHttpHal
+  
+  val cassandraDeps = coreDeps ++ logging ++ Seq(scalaConfigs, avro, hikariCP) ++ joda ++ testDeps
 
   val sandboxDeps = kafkaDeps ++ sqlDeps ++
     Seq("com.h2database" % "h2" % "1.4.196") ++ Seq(embeddedKafka)

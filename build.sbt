@@ -4,6 +4,8 @@ val JDK = "1.8"
 val buildNumber = scala.util.Properties.envOrNone("version").map(v => "." + v).getOrElse("")
 val hydraVersion = "0.11.3" + buildNumber
 
+val supportedScalaVersions = Seq("2.11.8", "2.12.8")
+
 lazy val defaultSettings = Seq(
   organization := "pluralsight",
   version := hydraVersion,
@@ -57,13 +59,13 @@ lazy val root = Project(
   id = "hydra",
   base = file(".")
 ).settings(defaultSettings).aggregate(common, core, avro, ingest, kafka, sql, jdbc, rabbitmq,
-  sandbox)
+  sandbox, cassandra)
 
 lazy val common = Project(
   id = "common",
   base = file("common")
 ).settings(moduleSettings,
-  crossScalaVersions := Seq("2.11.8", "2.12.8"),
+  crossScalaVersions := supportedScalaVersions,
   name := "hydra-common", libraryDependencies ++= Dependencies.baseDeps)
 
 lazy val core = Project(
@@ -83,16 +85,24 @@ lazy val avro = Project(
   base = file("avro")
 ).dependsOn(common)
   .settings(moduleSettings,
-    crossScalaVersions := Seq("2.11.8", "2.12.8"),
+    crossScalaVersions := supportedScalaVersions,
     name := "hydra-avro", libraryDependencies ++= Dependencies.avroDeps)
 
 lazy val sql = Project(
   id = "sql",
   base = file("sql")
-).dependsOn(avro)
+).dependsOn(core)
   .settings(moduleSettings,
-    crossScalaVersions := Seq("2.11.8", "2.12.8"),
+    crossScalaVersions := supportedScalaVersions,
     name := "hydra-sql", libraryDependencies ++= Dependencies.sqlDeps)
+
+lazy val cassandra = Project(
+  id = "cassandra",
+  base = file("cassandra")
+).dependsOn(core)
+  .settings(moduleSettings,
+    crossScalaVersions := supportedScalaVersions,
+    name := "hydra-cassandra", libraryDependencies ++= Dependencies.cassandraDeps)
 
 lazy val jdbc = Project(
   id = "jdbc",
