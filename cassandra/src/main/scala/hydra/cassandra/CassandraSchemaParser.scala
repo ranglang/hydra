@@ -5,7 +5,7 @@ import org.apache.avro.Schema
 
 object CassandraSchemaParser {
   def clusteringColumns(schema: Schema): Seq[String] = {
-    Option(schema.getProp("hydra.clustering.column")).map(_.split(",")) match {
+    Option(schema.getProp("hydra.clustering.columns")).map(_.split(",")) match {
       case Some(clusteringColumns) => clusteringColumns
       case None => Seq.empty
     }
@@ -32,15 +32,8 @@ object CassandraSchemaParser {
     }
   }
 
-  @throws(classOf[MissingMetadataException])
-  def keySpace(schema: Schema): String = {
-    Option(schema.getProp("hydra.keyspace")) match {
-      case Some(keyspace) => keyspace
-      case None => throw MissingMetadataException(
-        CassandraRecordFactory.KEYSPACE_PARAM,
-        s"A keyspace is required ${CassandraRecordFactory.KEYSPACE_PARAM}."
-      )
-    }
+  def keySpace(schema: Schema): Option[String] = {
+    Option(schema.getProp("hydra.keyspace"))
   }
 
   def partitionKeys(schema: Schema): Seq[String] = {

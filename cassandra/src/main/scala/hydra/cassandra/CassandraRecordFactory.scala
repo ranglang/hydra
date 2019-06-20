@@ -3,6 +3,7 @@ package hydra.cassandra
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util
+import akka.util.Timeout
 import com.pluralsight.hydra.avro.JsonConverter
 import hydra.avro.resource.SchemaResource
 import hydra.avro.util.{AvroUtils, SchemaWrapper}
@@ -23,7 +24,7 @@ import scala.util.{Failure, Success, Try}
 
 class CassandraRecordFactory(schemaResourceLoader: ActorRef) extends RecordFactory[Seq[String], GenericRecord]
   with ConfigSupport {
-  private implicit val timeout = util.Timeout(3.seconds)
+  private implicit val timeout: Timeout = util.Timeout(3.seconds)
 
   override def build(request: HydraRequest)(implicit ec: ExecutionContext): Future[CassandraRecord] = {
     for {
@@ -53,7 +54,13 @@ class CassandraRecordFactory(schemaResourceLoader: ActorRef) extends RecordFacto
           )
         )
       val table = request.metadataValue(TABLE_PARAM).getOrElse(schema.getName)
-      val keyspace = request.metadataValue(KEYSPACE_PARAM).getOrElse(CassandraSchemaParser.keySpace(schema))
+      val keyspace = request.metadataValue(KEYSPACE_PARAM)
+        .orElse(CassandraSchemaParser.keySpace(schema))
+        .getOrElse(
+          throw MissingMetadataException(
+          CassandraRecordFactory.KEYSPACE_PARAM,
+          s"A keyspace is required ${CassandraRecordFactory.KEYSPACE_PARAM}."
+        ))
       val consistencyLevel = request.metadataValue(CONSISTENCY_LEVEL_PARAM).getOrElse(CassandraSchemaParser.consistencyLevel(schema))
 
       val isCompactStorage = request.metadataValue(ENABLE_COMPACT_STORAGE_PARAM) match {

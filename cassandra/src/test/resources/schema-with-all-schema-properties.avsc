@@ -1,0 +1,25 @@
+{
+  "namespace": "hydra.test",
+  "type": "record",
+  "name": "Tester",
+  "hydra.clustering.columns": "name",
+  "hydra.clustering.order": "DESC",
+  "hydra.enable.compact.storage": "true",
+  "hydra.consistency.level": "ALL",
+  "hydra.keyspace": "test",
+  "hydra.partition.keys": "id,name",
+  "fields": [
+    {
+      "name": "id",
+      "type": "int"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "rank",
+      "type": "int"
+    }
+  ]
+}

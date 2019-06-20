@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.io.Source
 
-class CassandraRecordFactorySpec extends TestKit(ActorSystem("hydra"))
+class CassandraRecordFactorySpec extends TestKit(ActorSystem("cassandra-record-factory-spec"))
   with Matchers
   with FunSpecLike
   with ScalaFutures
