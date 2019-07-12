@@ -1,5 +1,7 @@
 package hydra.sql
 
+import java.sql.BatchUpdateException
+
 import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import hydra.avro.util.SchemaWrapper
 import hydra.common.util.TryWith
@@ -138,7 +140,6 @@ class PostgresOpsSpec extends Matchers with FlatSpecLike with BeforeAndAfterAll 
         |}
       """.stripMargin))
 
-
     TryWith(pgDb.getConnection("postgres", "")) { conn =>
       JdbcUtils.createTable(schema, PostgresDialect, "const_test", "",
         UnderscoreSyntax, conn)
@@ -148,6 +149,24 @@ class PostgresOpsSpec extends Matchers with FlatSpecLike with BeforeAndAfterAll 
       stmts.foreach { stmt =>
         val s = conn.prepareStatement(stmt)
         s.executeUpdate() shouldBe 0
+      }
+    }.get
+  }
+
+  it should "throw a BatchUpdateException" in {
+    val nullBytes: String = null
+    val stringWithNullBytes = s"This string sucks cuz it has these: ${nullBytes}"
+
+    TryWith(pgDb.getConnection("postgres", "")) { conn =>
+      val sql = PostgresDialect.buildUpsert("test_composite", compositePKSchema, UnderscoreSyntax)
+      val stmt = conn.prepareStatement(sql)
+      println(sql)
+      val rec = new GenericRecordBuilder(compositePKSchema.schema).set("id", 1)
+        .set("username", stringWithNullBytes).set("rank", 10).build
+      new AvroValueSetter(compositePKSchema, PostgresDialect).bind(rec, stmt)
+      //when the update goes through, it should throw an exception because you can't have null bytes in a string
+      intercept[BatchUpdateException] {
+        stmt.executeUpdate()
       }
     }.get
   }
