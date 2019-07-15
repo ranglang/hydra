@@ -106,6 +106,12 @@ lazy val rabbitmq = Project(
 ).dependsOn(core)
   .settings(moduleSettings, name := "hydra-rabbitmq", libraryDependencies ++= Dependencies.rabbitDeps)
 
+lazy val s3 = Project(
+  id = "s3",
+  base = file("s3")
+).dependsOn(core)
+  .settings(moduleSettings, name := "hydra-s3", libraryDependencies ++= Dependencies.s3Deps)
+
 val sbSettings = defaultSettings ++ Test.testSettings ++ noPublishSettings ++ restartSettings
 lazy val sandbox = Project(
   id = "sandbox",

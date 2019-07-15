@@ -35,6 +35,16 @@ object RequestParams {
   val HYDRA_SCHEMA_PARAM = "hydra-schema"
 
   /**
+    * The name of the bucket this record should be saved into
+    */
+  val HYDRA_S3_BUCKET_NAME = "hydra-s3-bucket-name"
+
+  /**
+    * The name the file will take when it gets into s3
+    */
+  val HYDRA_S3_FILE_NAME = "hydra-s3-file-name"
+
+  /**
     * The underlying topic this message should be sent to.
     * Required when using the Kafka ingestor.
     */

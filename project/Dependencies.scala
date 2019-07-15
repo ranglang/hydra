@@ -35,6 +35,7 @@ object Dependencies {
   val akkaKryoVersion = "0.5.2"
   val h2DbVersion = "1.4.196"
   val akkaManagementVersion = "1.0.0"
+  val alpakkaVersion = "1.1.0"
 
   object Compile {
 
@@ -61,6 +62,10 @@ object Dependencies {
       "org.apache.kafka" %% "kafka" % kafkaVersion,
       "org.apache.kafka" % "kafka-clients" % kafkaVersion,
       embeddedKafka % "test")
+
+    val s3 = Seq(
+      "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion
+    )
 
     val confluent = Seq("io.confluent" % "kafka-schema-registry-client" % confluentVersion,
       "io.confluent" % "kafka-avro-serializer" % confluentVersion).map(_.excludeAll(
@@ -174,6 +179,8 @@ object Dependencies {
   val rabbitDeps = logging ++ Seq(scalaConfigs) ++ joda ++ opRabbit ++ testDeps
 
   val kafkaDeps = coreDeps ++ Seq(akkaKafkaStream, jsonLenses) ++ kafka ++ akkaHttpHal
+
+  val s3Deps = coreDeps ++ s3
 
   val sandboxDeps = kafkaDeps ++ sqlDeps ++
     Seq("com.h2database" % "h2" % "1.4.196") ++ Seq(embeddedKafka)
