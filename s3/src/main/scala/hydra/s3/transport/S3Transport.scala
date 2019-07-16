@@ -9,8 +9,8 @@ class S3Transport extends Transport with ActorLogging {
 
   override def transport: Receive = {
     case Deliver(record: S3Record, deliveryId, callback) =>
-      log.info("SENDING TO S3: {}", record)
-//      callback.onCompletion(deliveryId, None, )
+
+      callback.onCompletion(deliveryId, None, None)
   }
 
 }
