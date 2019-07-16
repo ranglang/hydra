@@ -56,7 +56,7 @@ lazy val moduleSettings = defaultSettings ++ Test.testSettings //++ Publish.sett
 lazy val root = Project(
   id = "hydra",
   base = file(".")
-).settings(defaultSettings).aggregate(common, core, avro, ingest, kafka, sql, jdbc, rabbitmq,
+).settings(defaultSettings).aggregate(common, core, avro, ingest, kafka, sql, jdbc, rabbitmq, s3,
   sandbox)
 
 lazy val common = Project(
@@ -122,7 +122,7 @@ lazy val sandbox = Project(
 lazy val ingest = Project(
   id = "ingest",
   base = file("ingest")
-).dependsOn(core, kafka)
+).dependsOn(core, kafka, s3)
   .settings(moduleSettings ++ dockerSettings,
     javaAgents += "org.aspectj" % "aspectjweaver" % "1.8.13",
     name := "hydra-ingest", libraryDependencies ++= Dependencies.ingestDeps)
