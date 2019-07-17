@@ -1,16 +1,14 @@
-package hydra.s3
+package hydra.s3.transport
 
 import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.model.Uri
 import akka.stream.alpakka.s3.MultipartUploadResult
-import akka.stream.scaladsl.Sink
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import akka.util.ByteString
-import hydra.core.transport.{AckStrategy, RecordMetadata, TransportCallback, TransportSupervisorCallback}
 import hydra.core.transport.Transport.Deliver
+import hydra.core.transport.{AckStrategy, RecordMetadata, TransportCallback}
 import hydra.s3.producer.S3Record
-import hydra.s3.transport.S3Transport
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.Future
