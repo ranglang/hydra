@@ -1,5 +1,6 @@
 package hydra.core.ingest
 
+import akka.actor.{ActorRef, Props}
 import configs.syntax._
 import hydra.common.config.ConfigSupport
 import hydra.common.logging.LoggingAdapter
@@ -7,7 +8,7 @@ import hydra.core.akka.InitializingActor.{InitializationError, Initialized}
 import hydra.core.protocol._
 import hydra.core.transport.{AckStrategy, HydraRecord}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 /**
@@ -21,20 +22,28 @@ import scala.concurrent.duration._
 trait TransportOps extends ConfigSupport with LoggingAdapter {
   this: Ingestor =>
 
-  implicit val ec = context.dispatcher
+  implicit val ec: ExecutionContext = context.dispatcher
 
-  override def initTimeout = applicationConfig
-    .getOrElse[FiniteDuration](s"transports.$transportName.resolve-timeout", 30 seconds).value
+  override def initTimeout: FiniteDuration = applicationConfig
+    .getOrElse[FiniteDuration](s"transports.$transportName.resolve-timeout", 30.seconds).value
 
   /**
     * Always override this with a def due to how Scala initializes val in subtraits.
     */
   def transportName: String
 
+  def transportProps: Option[Props] = None
+
   private val transportPath = applicationConfig.get[String](s"transports.$transportName.path")
     .valueOrElse(s"/user/service/transport_registrar/${transportName}_transport")
 
-  lazy val transportActorFuture = context.actorSelection(transportPath).resolveOne()(initTimeout)
+  lazy val transportActorFuture: Future[ActorRef] =
+    transportProps match {
+      case Some(props) =>
+        Future.successful(context.actorOf(props, transportName))
+      case None =>
+        context.actorSelection(transportPath).resolveOne()(initTimeout)
+    }
 
   /**
     * Overrides the init method to look up a transport

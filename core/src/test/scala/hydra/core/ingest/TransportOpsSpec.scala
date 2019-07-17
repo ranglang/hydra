@@ -4,15 +4,13 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.TestActors.ForwardActor
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.pluralsight.hydra.reflect.DoNotScan
-import hydra.core.akka.ActorInitializationException
-import hydra.core.protocol.{IngestorError, Produce}
+import hydra.core.protocol.Produce
 import hydra.core.test.TestRecordFactory
 import hydra.core.transport.AckStrategy.NoAck
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, FunSpecLike, Matchers}
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 
 /**
@@ -32,6 +30,7 @@ class TransportOpsSpec extends TestKit(ActorSystem("test")) with Matchers
 
   val transport = system.actorOf(Props(new ForwardActor(tm.ref)), "test-transport")
 
+  implicit val executionContext: ExecutionContext = system.dispatcher
 
   describe("TransportOps") {
     it("looks up a transport") {

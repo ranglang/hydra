@@ -8,7 +8,7 @@ import hydra.core.protocol._
 import hydra.core.transport.{AckStrategy, HydraRecord, RecordFactory, Transport}
 import org.apache.commons.lang3.ClassUtils
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 
 /**
@@ -21,7 +21,7 @@ trait Ingestor extends InitializingActor {
 
   def name: String = ClassUtils.getSimpleName(this.getClass)
 
-  private implicit val ec = context.dispatcher
+  private implicit val ec: ExecutionContext = context.dispatcher
 
   def recordFactory: RecordFactory[_, _]
 
