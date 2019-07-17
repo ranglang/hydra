@@ -15,7 +15,7 @@ import hydra.s3.producer.S3Record
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class S3Transport extends Transport with ActorLogging with ConfigSupport {
+class S3Transport extends Transport with ActorLogging {
 
   private implicit val executionContext: ExecutionContext = context.dispatcher
   private implicit val materializer: Materializer = ActorMaterializer()
