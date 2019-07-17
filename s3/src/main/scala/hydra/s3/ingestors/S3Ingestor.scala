@@ -1,10 +1,12 @@
 package hydra.s3.ingestors
 
+import akka.actor.Props
 import configs.syntax._
 import hydra.core.ingest.{Ingestor, RequestParams, TransportOps}
 import hydra.core.protocol.{Ignore, Ingest, Join, Publish}
 import hydra.core.transport.RecordFactory
 import hydra.s3.producer.S3RecordFactories
+import hydra.s3.transport.S3Transport
 
 import scala.concurrent.duration._
 
