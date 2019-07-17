@@ -1,13 +1,12 @@
 package hydra.s3.transport
 
 import akka.actor.ActorLogging
-import akka.stream.alpakka.s3.{S3Attributes, S3Settings}
+import akka.stream.alpakka.s3.S3Attributes
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl.Source
 import akka.stream.{ActorMaterializer, Materializer}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import hydra.common.config.ConfigSupport
 import hydra.core.transport.Transport
 import hydra.core.transport.Transport.Deliver
 import hydra.s3.producer.S3Record
