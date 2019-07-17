@@ -1,7 +1,7 @@
 package hydra.s3.producer
 
 import hydra.core.ingest.{HydraRequest, RequestParams}
-import hydra.core.transport.{HydraRecord, RecordFactory}
+import hydra.core.transport.RecordFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
