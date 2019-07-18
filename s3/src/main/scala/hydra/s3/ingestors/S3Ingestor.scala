@@ -27,4 +27,6 @@ class S3Ingestor extends Ingestor with TransportOps {
 
   override def transportName: String = "s3"
 
+  override def transportProps: Option[Props] = Some(S3Transport.props)
+
 }
