@@ -3,6 +3,7 @@ package hydra.s3.ingestors
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.TestActors.ForwardActor
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
+import hydra.core.akka.InitializingActor.Initialized
 import hydra.core.ingest.{HydraRequest, RequestParams}
 import hydra.core.protocol.{Join, Publish}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -18,6 +19,8 @@ class S3IngestorSpec extends TestKit(ActorSystem("s3-transport-spec")) with Matc
     val transportForward = Props(new ForwardActor(transportProbe.ref))
 
     val ingestor = system.actorOf(Props(new TestS3Ingestor(transportForward)))
+
+    ingestor ! Initialized
 
     "Join ingest when proper" in {
       val metadata = Map(RequestParams.HYDRA_S3_BUCKET_NAME -> "bucketName", RequestParams.HYDRA_S3_FILE_NAME -> "fileName")
@@ -36,5 +39,7 @@ private[ingestors] class TestS3Ingestor(transport: Props) extends S3Ingestor {
   override def preStart(): Unit = {}
 
   override def transportProps: Option[Props] = Some(transport)
+
+  override def transportName: String = "test_s3"
 
 }
