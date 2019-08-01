@@ -89,7 +89,7 @@ private[sql] object JdbcUtils {
                   dbSyntax: DbSyntax,
                   conn: Connection): Int = {
     val strSchema = schemaString(schema, table, dialect, dbSyntax)
-    val sql = s"CREATE TABLE $table ($strSchema) $createTableOptions"
+    val sql =  s"""CREATE TABLE "$table" ($strSchema) $createTableOptions"""
     logger.debug(sql)
     val statement = conn.createStatement
     try {
